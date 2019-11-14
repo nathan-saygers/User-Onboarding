@@ -4,9 +4,9 @@ import axios from 'axios';
 import {withFormik, Form, Field } from 'formik';
 
 const AddUserForm = ({values, errors, touched, status}) => {
-  const [userSubmission, setUserSubmission] = useState([]);
+  const [users, setUsers] = useState([]);
   useEffect(() => {
-    status && setUserSubmission(userSubmission => [...userSubmission, status])
+    status && setUsers(users => [...users, status])
   }, [status])
   
   return (
@@ -22,11 +22,10 @@ const AddUserForm = ({values, errors, touched, status}) => {
         {touched.tos && errors.tos && (<p>{errors.tos}</p>)}
         <button>Submit</button>
       </Form>
-      {userSubmission.map(entry => (
+      {users.map(entry => (
         <ul key={entry.id}>
           <li>Name: {entry.name}</li>
           <li>Email: {entry.email}</li>
-          <li>Password: {entry.password}</li>
         </ul>
       ))}
     </div>
@@ -55,8 +54,22 @@ const FormikForm = withFormik({
     tos: Yup.boolean()
       .oneOf([true], "You must agree to the Terms of Service"),
   }),
-  handleSubmit(values) {
-    console.log(values);
+  handleSubmit(values, { resetForm, setErrors, setSubmitting }) {
+    if (values.email === "alreadytaken@atb.dev") {
+      setErrors({ email: "That email is already taken" });
+    } else {
+      axios
+        .post("https://reqres.in/api/users", values)
+        .then(res => {
+          console.log(res); // Data was created successfully and logs to console
+          resetForm();
+          setSubmitting(false);
+        })
+        .catch(err => {
+          console.log(err); // There was an error creating the data and logs to console
+          setSubmitting(false);
+      });
+    }
   }
 })(AddUserForm);
 
