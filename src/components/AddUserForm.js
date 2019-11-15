@@ -6,6 +6,7 @@ import {withFormik, Form, Field } from 'formik';
 const AddUserForm = ({values, errors, touched, status}) => {
   const [users, setUsers] = useState([]);
   useEffect(() => {
+    console.log(status)
     status && setUsers(users => [...users, status])
   }, [status])
   
@@ -54,7 +55,7 @@ const FormikForm = withFormik({
     tos: Yup.boolean()
       .oneOf([true], "You must agree to the Terms of Service"),
   }),
-  handleSubmit(values, { resetForm, setErrors, setSubmitting }) {
+  handleSubmit(values, { resetForm, setErrors, setSubmitting, setStatus }) {
     if (values.email === "alreadytaken@atb.dev") {
       setErrors({ email: "That email is already taken" });
     } else {
@@ -62,8 +63,9 @@ const FormikForm = withFormik({
         .post("https://reqres.in/api/users", values)
         .then(res => {
           console.log(res); // Data was created successfully and logs to console
-          resetForm();
-          setSubmitting(false);
+          setStatus(res.data);
+          setSubmitting()
+          resetForm()
         })
         .catch(err => {
           console.log(err); // There was an error creating the data and logs to console
